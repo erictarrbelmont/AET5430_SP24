@@ -22,6 +22,17 @@ int main() {
     
     audioread(filename, signal, Fs, bitDepth, numChannels);
     
+    int N = signal.size();
+    
+    for (int n = 0; n < N ; n++){
+        float x = signal[n];
+        float y = x * 0.25;
+        signal[n] = y;
+    }
+    
+    std::string outputFilename = "NewFile.wav";
+    
+    audiowrite(outputFilename, signal, Fs, bitDepth, numChannels);
     
     return 0;
 }
