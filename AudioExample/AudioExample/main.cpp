@@ -11,6 +11,15 @@
 #include "AudioFile/AudioFile.hpp"
 using namespace std;
 
+float globalVar = 1.0f;
+
+float myFunction(float var1, int var2);
+
+void stereoPanner(vector<float> & input, vector<vector<float>> & output, const float panValue);
+
+void gainChange(vector<float> & signal);
+void audioEffect(vector<float> & input, vector<float> & output);
+
 
 int main() {
     
@@ -24,16 +33,60 @@ int main() {
     
     int N = signal.size();
     
-    for (int n = 0; n < N ; n++){
-        float x = signal[n];
-        float y = x * 0.25;
-        signal[n] = y;
-    }
+    vector<vector<float>> output (2, vector<float> (N));
     
-    std::string outputFilename = "NewFile.wav";
+    float panValue = -100.f;
     
-    audiowrite(outputFilename, signal, Fs, bitDepth, numChannels);
+    stereoPanner(signal, output, panValue);
+    
+    std::string outputFilename = "PanFile.wav";
+    
+    int outNumChannels = 2;
+    
+    audiowrite(outputFilename, output, Fs, bitDepth, outNumChannels);
     
     return 0;
 }
+
+
+float myFunction(float var1, int var2){
+    
+    int localVar = var2 + 1;
+    float localFloatVar = var1 * 0.5f;
+    
+    return localFloatVar;
+    
+}
+
+
+void stereoPanner(vector<float> & input, vector<vector<float>> & output, const float panValue){
+    
+    // panValue = [-100 to +100]
+    
+    float p = panValue / 200.f + .5f; // p = [0 - 1]
+    float aL = std::powf( (1.f-p) , 0.5f);
+    float aR = std::powf( p , 0.5f);
+    
+    int N = input.size();
+    
+    for (int n = 0; n < N; n++){
+        float x = input[n];
+        output[0][n] = x * aL;
+        output[1][n] = x * aR;
+    }
+    
+}
+
+void gainChange(vector<float> & signal){
+    int N = signal.size();
+    for(int n = 0; n < N; ++n){
+        float x = signal[n];
+        signal[n] = x * 0.5f;
+    }
+    
+}
+
+
+
+
 
