@@ -21,29 +21,104 @@ void gainChange(vector<float> & signal);
 void audioEffect(vector<float> & input, vector<float> & output);
 
 
-int main() {
+//struct AudioInfo {
+//    string filename;
+//    int Fs;
+//    int bitDepth;
+//    int numChannels;
+//    int N;
+//
+//};
+
+class AudioInfo {
     
-    string filename = "AcGtr.wav";
+public:
+    string filename;
     int Fs;
     int bitDepth;
     int numChannels;
+    int N;
+    
+};
+
+
+class GainProcessor {
+  
+public:
+    // make functions public
+    void setdBGain(float dB){
+        if (dB <= 12.f){
+            if (dB >= -96.f){
+                dBGain = dB;
+                linGain = std::pow(10.f,dB/20.f);
+            }
+        }
+    }
+    
+    
+    void process(vector<float> & input, vector<float> & output){
+        int N = input.size();
+        for (int n = 0; n < N ; ++n){
+            output[n] = input[n] * linGain;
+        }
+    }
+    
+    void processInPlace(vector<float> & signal){
+        int N = signal.size();
+        
+        int a = 5;
+        float b = 12.f;
+        
+        for (int n = 0; n < N ; ++n){
+            //float x = signal[n];
+            //signal[n] = x * linGain;
+            signal[n] *= linGain;
+        }
+    }
+    
+private:
+    // make variables private
+    float dBGain = 0.f;
+    float linGain = 1.f;
+    
+};
+
+
+
+int main() {
+    
+    //string filename = "AcGtr.wav";
+    //int Fs;
+    //int bitDepth;
+    //int numChannels;
+    
+    AudioInfo a;
+    a.filename = "AcGtr.wav";
+    
     vector<float> signal;
     
-    audioread(filename, signal, Fs, bitDepth, numChannels);
+    audioread(a.filename, signal, a.Fs, a.bitDepth, a.numChannels);
     
-    int N = signal.size();
+    a.N = signal.size();
     
-    vector<vector<float>> output (2, vector<float> (N));
+    //vector<vector<float>> output (2, vector<float> (a.N));
+    vector<float> output (a.N);
     
-    float panValue = -100.f;
+    GainProcessor gain;
     
-    stereoPanner(signal, output, panValue);
+    gain.setdBGain(-24.f);
     
-    std::string outputFilename = "PanFile.wav";
+    gain.process(signal,output);
     
-    int outNumChannels = 2;
+    //float panValue = -100.f;
     
-    audiowrite(outputFilename, output, Fs, bitDepth, outNumChannels);
+    //stereoPanner(signal, output, panValue);
+    
+    std::string outputFilename = "GainFile.wav";
+    
+    int outNumChannels = 1;
+    
+    audiowrite(outputFilename, output, a.Fs, a.bitDepth, outNumChannels);
     
     return 0;
 }
