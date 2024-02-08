@@ -41,10 +41,64 @@ public:
     
 };
 
+class DistortionProcessor {
+public:
+    enum Type {FULLWAVE, HALFWAVE, CUBIC, HARDCLIP};
+    
+    DistortionProcessor(Type t) : distType(t){
+        
+    }
+    
+    void process (vector<float> & signal)
+    {
+    
+        if (distType == Type::CUBIC){
+            processCubic(signal);
+        }
+        else if (distType == Type::HARDCLIP){
+            // hc code
+        }
+        // ...
+    }
+    
+    
+private:
+    
+    void processCubic (vector<float> & signal){
+        int N = signal.size();
+        for (int n = 0; n < N ; n++){
+            // cubic code
+        }
+    }
+    
+    Type distType;
+};
+
+
 
 class GainProcessor {
   
 public:
+    
+    GainProcessor(){
+        initializeVariables();
+        setdBGain(0.f);
+    }
+    
+    GainProcessor(float dB) : dBGain(dB)
+    {
+        setdBGain(dB);
+    }
+    
+    GainProcessor(float dB, float lg) : dBGain(dB), linGain(lg)
+    {
+        setdBGain(dB);
+    }
+    
+    ~GainProcessor(){
+        cout<<"All done!" << endl;
+    }
+    
     // make functions public
     void setdBGain(float dB){
         if (dB <= 12.f){
@@ -76,11 +130,22 @@ public:
         }
     }
     
+    
+    float getMaxValue(){
+        return maxValue;
+    }
+    
 private:
     // make variables private
-    float dBGain = 0.f;
-    float linGain = 1.f;
+    float dBGain;
+    float linGain;
     
+    float maxValue;
+    
+    void initializeVariables(){
+        dBGain = 0.f;
+        linGain = 1.f;
+    }
 };
 
 
@@ -104,12 +169,18 @@ int main() {
     //vector<vector<float>> output (2, vector<float> (a.N));
     vector<float> output (a.N);
     
-    GainProcessor gain;
+    {
+        GainProcessor gain(-12.f);
+        //GainProcessor gain = GainProcessor(-12.f);
     
-    gain.setdBGain(-24.f);
+        gain.setdBGain(-24.f);
     
-    gain.process(signal,output);
-    
+        gain.process(signal,output);
+        
+        DistortionProcessor distortion {DistortionProcessor::Type::CUBIC};
+        
+        
+    }
     //float panValue = -100.f;
     
     //stereoPanner(signal, output, panValue);
