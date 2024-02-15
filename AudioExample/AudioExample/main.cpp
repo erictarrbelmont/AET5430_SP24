@@ -149,8 +149,61 @@ private:
 };
 
 
+class AudioBuffer
+{
+  // This class is a fancy "audio" version of a
+    // primative array
+    
+public:
+    void setBufferSize(int size){
+        bufferSize = size;
+    }
+    
+    int getBufferSize() {
+        return bufferSize;
+    }
+    
+    void fillChannelOfBuffer(vector<float> signal, int channel, int & sigIndex){
+        int N = signal.size();
+        for (int n = 0; n < bufferSize ; n++){
+            if (sigIndex < N){
+                buffer[channel][n] = signal[sigIndex];
+                sigIndex++;
+            }
+            buffer[channel][n] = 0.f;
+        }
+    }
+    
+    float getSample( int channel, int sampleNumber){
+        return buffer[channel][sampleNumber];
+    }
+    
+    void setSample(float value, int channel, int sampleNumber){
+        buffer[channel][sampleNumber] = value;
+    }
+    
+private:
+    
+    int bufferSize = 512; // could be 32, 64, 128, ... , 1024
+    
+    float buffer[2][1024] = {0.f}; // stereo with 1024 samples
+};
+
+
 
 int main() {
+    
+    
+    float x = 5.f;
+    float * p_x;
+    p_x = &x;
+    
+    cout << x << endl; // value from x
+    cout << &x << endl; // reference hash of x
+    cout << p_x << endl; // reference hash stored in p_x variable
+    cout << *p_x << endl; // value from this reference hash block of memory
+    
+    
     
     //string filename = "AcGtr.wav";
     //int Fs;
@@ -166,16 +219,26 @@ int main() {
     
     a.N = signal.size();
     
+    {
+        AudioBuffer myBuffer;
+        myBuffer.setBufferSize(64);
+        int sigIndex = 0;
+        while (sigIndex < a.N){
+            myBuffer.fillChannelOfBuffer(signal, 0, sigIndex);
+        }
+        
+    }
+    
     //vector<vector<float>> output (2, vector<float> (a.N));
     vector<float> output (a.N);
     
     {
-        GainProcessor gain(-12.f);
+        GainProcessor * gain;
         //GainProcessor gain = GainProcessor(-12.f);
     
-        gain.setdBGain(-24.f);
+        gain->setdBGain(-24.f);
     
-        gain.process(signal,output);
+        gain->process(signal,output);
         
         DistortionProcessor distortion {DistortionProcessor::Type::CUBIC};
         
