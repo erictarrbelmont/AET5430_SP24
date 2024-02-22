@@ -75,6 +75,47 @@ private:
 };
 
 
+class AudioBuffer
+{
+  // This class is a fancy "audio" version of a
+    // primative array
+    
+public:
+    void setBufferSize(int size){
+        bufferSize = size;
+    }
+    
+    int getBufferSize() {
+        return bufferSize;
+    }
+    
+    void fillChannelOfBuffer(vector<float> & signal, int channel, int & sigIndex){
+        int N = signal.size();
+        for (int n = 0; n < bufferSize ; n++){
+            if (sigIndex < N){
+                buffer[channel][n] = signal[sigIndex];
+                sigIndex++;
+            }
+            else {
+                buffer[channel][n] = 0.f;
+            }
+        }
+    }
+    
+    float getSample( int channel, int sampleNumber){
+        return buffer[channel][sampleNumber];
+    }
+    
+    void setSample(float value, int channel, int sampleNumber){
+        buffer[channel][sampleNumber] = value;
+    }
+    
+private:
+    
+    int bufferSize = 512; // could be 32, 64, 128, ... , 1024
+    
+    float buffer[2][1024] = {0.f}; // stereo with 1024 samples
+};
 
 class GainProcessor {
   
@@ -109,6 +150,13 @@ public:
         }
     }
     
+    void processBuffer (AudioBuffer & buffer, int channel, int bufferSize ){
+        for (int n = 0; n < bufferSize; n++){
+            float x = buffer.getSample(channel,n);
+            buffer.setSample(x * linGain, channel, n);
+            
+        }
+    }
     
     void process(vector<float> & input, vector<float> & output){
         int N = input.size();
@@ -149,45 +197,7 @@ private:
 };
 
 
-class AudioBuffer
-{
-  // This class is a fancy "audio" version of a
-    // primative array
-    
-public:
-    void setBufferSize(int size){
-        bufferSize = size;
-    }
-    
-    int getBufferSize() {
-        return bufferSize;
-    }
-    
-    void fillChannelOfBuffer(vector<float> signal, int channel, int & sigIndex){
-        int N = signal.size();
-        for (int n = 0; n < bufferSize ; n++){
-            if (sigIndex < N){
-                buffer[channel][n] = signal[sigIndex];
-                sigIndex++;
-            }
-            buffer[channel][n] = 0.f;
-        }
-    }
-    
-    float getSample( int channel, int sampleNumber){
-        return buffer[channel][sampleNumber];
-    }
-    
-    void setSample(float value, int channel, int sampleNumber){
-        buffer[channel][sampleNumber] = value;
-    }
-    
-private:
-    
-    int bufferSize = 512; // could be 32, 64, 128, ... , 1024
-    
-    float buffer[2][1024] = {0.f}; // stereo with 1024 samples
-};
+
 
 
 
@@ -221,10 +231,17 @@ int main() {
     
     {
         AudioBuffer myBuffer;
-        myBuffer.setBufferSize(64);
+        int bufferSize = 64;
+        myBuffer.setBufferSize(bufferSize);
+        
+        GainProcessor gain;
+        gain.setdBGain(-24.f);
+        
         int sigIndex = 0;
         while (sigIndex < a.N){
             myBuffer.fillChannelOfBuffer(signal, 0, sigIndex);
+            gain.processBuffer(myBuffer,0,bufferSize);
+            
         }
         
     }
