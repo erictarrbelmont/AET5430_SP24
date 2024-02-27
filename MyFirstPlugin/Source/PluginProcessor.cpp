@@ -139,8 +139,17 @@ void MyFirstPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-    hardClipProcessor(buffer);
-    gainProcessor(buffer);
+    //hardClipProcessor(buffer);
+    //gainProcessor(buffer);
+    
+    distortion.setDrive(10.f);
+    
+    auto N = buffer.getNumSamples();
+    for (int c = 0; c < totalNumOutputChannels; c++){
+        float *channelData = buffer.getWritePointer(c);
+        distortion.process(channelData, N);
+        // do something with data...
+    }
     
     
 }

@@ -9,7 +9,7 @@
 #pragma once
 
 #include <JuceHeader.h>
-
+#include "DIstortionProcessor.h"
 //==============================================================================
 /**
 */
@@ -54,6 +54,8 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
 
 private:
+    
+    DistortionProcessor distortion;
     
     float gainProcessor(float x);
     
