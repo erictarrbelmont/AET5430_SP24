@@ -142,9 +142,9 @@ void FilterPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     auto numSamples = buffer.getNumSamples();
     
     filter.setFreq(filterFrequency);
-    filter.setQ(0.7071f);
-    filter.setAmpdB(0.f);
-    filter.setFilterType(Biquad::FilterType::LPF);
+    filter.setQ(filterResonance);
+    filter.setAmpdB(filterAmp);
+    filter.setFilterType(filterType);
     
     for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {

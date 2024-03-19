@@ -55,6 +55,10 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
 
     float filterFrequency = 1000.f;
+    float filterResonance = 1.f;
+    float filterAmp = 0.f;
+    
+    Biquad::FilterType filterType = Biquad::FilterType::LPF;
     
 private:
     
