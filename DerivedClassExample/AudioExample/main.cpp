@@ -28,16 +28,26 @@ public:
         }
     }
     
-    virtual float processSample(float x){
-        return x;
-    }
+    // "Regular" virtual virtual function.
+    // Can be overriden
+    // Has an implementation that can also be used
+    
+    //virtual float processSample(float x){
+    //    return x;
+    //}
+    
+    // "Pure" virtual function
+    // Must be overriden
+    // Has no implementation
+    virtual float processSample(float x) = 0;
+    
     
 private:
     float Fs;
 };
 
 // Specific/derived class
-class DistortionEffect : AudioEffect {
+class DistortionEffect : public AudioEffect {
 public:
     
     float processSample(float x) override {
@@ -65,6 +75,12 @@ int main() {
     
     int N = signal.size();
     
+    
+    DistortionEffect dist;
+    
+    dist.prepare(Fs);
+    
+    dist.processSignal(signal);
     
     vector<float> output (N);
     

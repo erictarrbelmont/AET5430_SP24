@@ -51,6 +51,12 @@ FilterPluginAudioProcessorEditor::FilterPluginAudioProcessorEditor (FilterPlugin
     filterSelection.setText("Select Type...");
     addAndMakeVisible(filterSelection);
     filterSelection.addListener(this);
+    
+    bypassButton.setBounds(200, 275, 100, 20);
+    bypassButton.setButtonText("Bypass");
+    bypassButton.setToggleState(false, juce::dontSendNotification);
+    addAndMakeVisible(bypassButton);
+    bypassButton.addListener(this);
 }
 
 FilterPluginAudioProcessorEditor::~FilterPluginAudioProcessorEditor()
@@ -125,6 +131,14 @@ void FilterPluginAudioProcessorEditor::comboBoxChanged(juce::ComboBox *comboBox)
             audioProcessor.filterType = Biquad::FilterType::PEAK;
             ampSlider.setEnabled(true);
         }
+    }
+    
+}
+
+void FilterPluginAudioProcessorEditor::buttonClicked(juce::Button *button){
+    
+    if (button == &bypassButton){
+        audioProcessor.bypass = bypassButton.getToggleState();
     }
     
 }

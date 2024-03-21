@@ -141,6 +141,9 @@ void FilterPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
 
     auto numSamples = buffer.getNumSamples();
     
+    if (bypass)
+        return;
+    
     filter.setFreq(filterFrequency);
     filter.setQ(filterResonance);
     filter.setAmpdB(filterAmp);

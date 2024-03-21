@@ -58,6 +58,8 @@ public:
     float filterResonance = 1.f;
     float filterAmp = 0.f;
     
+    bool bypass = false;
+    
     Biquad::FilterType filterType = Biquad::FilterType::LPF;
     
 private:
