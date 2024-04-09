@@ -14,6 +14,9 @@ using namespace std;
 // Generic base class
 class AudioEffect {
 public:
+    
+    virtual ~AudioEffect() {};
+    
     void prepare(float sampleRate){
         Fs = sampleRate;
     }
@@ -47,7 +50,7 @@ private:
 };
 
 // Specific/derived class
-class DistortionEffect : public AudioEffect {
+class FullWaveEffect : public AudioEffect {
 public:
     
     float processSample(float x) override {
@@ -58,7 +61,19 @@ private:
     
 };
 
-
+class HalfWaveEffect : public AudioEffect {
+public:
+    
+    float processSample(float x) override {
+       if (x < 0.f)
+           x = 0.f;
+           
+        return x;
+    }
+    
+private:
+    
+};
 
 
 int main() {
@@ -76,11 +91,29 @@ int main() {
     int N = signal.size();
     
     
-    DistortionEffect dist;
+    {
+        AudioEffect * effect[2];
     
-    dist.prepare(Fs);
+        effect[0] = new FullWaveEffect;
+        effect[1] = new HalfWaveEffect;
     
-    dist.processSignal(signal);
+        for (int n = 0; n < 2; n++){
+            float x = effect[n]->processSample(-1.f);
+            int test = 1;
+        }
+        
+        // Replace effect[0] with HalfWaveRect
+        delete effect[0];
+        effect[0] = new HalfWaveEffect;
+        
+        for (int n = 0; n < 2; n++){
+            float x = effect[n]->processSample(-1.f);
+            int test = 1;
+        }
+        
+        delete effect[0];
+        delete effect[1];
+    }
     
     vector<float> output (N);
     
