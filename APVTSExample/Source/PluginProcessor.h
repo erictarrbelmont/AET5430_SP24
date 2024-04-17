@@ -56,10 +56,24 @@ public:
     
     juce::AudioProcessorValueTreeState apvts;
 
+    
+    static const juce::StringRef KNOB1;
+    static const juce::StringRef BUTTON1;
+    
+    
+    void slider1Changed(float value);
+    
+    void button1Clicked(bool value);
+    
 private:
     
     int ParameterVersionHint = 1;
     
+    float gain = 1.f; // linear gain
+    
+    float smoothedGain[2] = {0.f};
+    float alpha = 0.999f;
+    const float respTime = .05f; // smoothing response time in sec
     
     juce::AudioProcessorValueTreeState::ParameterLayout createParams();
     

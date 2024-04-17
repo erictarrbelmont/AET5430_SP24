@@ -9,6 +9,10 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
+const juce::StringRef APVTSExampleAudioProcessor::KNOB1 = "KNOB1";
+const juce::StringRef APVTSExampleAudioProcessor::BUTTON1 = "BUTTON1";
+
+
 //==============================================================================
 APVTSExampleAudioProcessor::APVTSExampleAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
@@ -38,9 +42,9 @@ juce::AudioProcessorValueTreeState::ParameterLayout APVTSExampleAudioProcessor::
     // Min value
     // Max value
     // Starting value
-    params.push_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID{"KNOB1",ParameterVersionHint},"Gain",-12.f, 6.f, 0.f));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID{KNOB1,ParameterVersionHint},"Gain",-48.f, 6.f, 0.f));
     
-    params.push_back(std::make_unique<juce::AudioParameterBool>(juce::ParameterID{"BUTTON1",ParameterVersionHint},"Bypass",true));
+    params.push_back(std::make_unique<juce::AudioParameterBool>(juce::ParameterID{BUTTON1,ParameterVersionHint},"Bypass",true));
     
     return {params.begin(),params.end()};
 }
@@ -115,6 +119,7 @@ void APVTSExampleAudioProcessor::prepareToPlay (double sampleRate, int samplesPe
 {
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
+    alpha = std::exp(-std::log(9.f)/(sampleRate*respTime));
 }
 
 void APVTSExampleAudioProcessor::releaseResources()
@@ -164,15 +169,22 @@ void APVTSExampleAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-    // This is the place where you'd normally do the guts of your plugin's
-    // audio processing...
-    // Make sure to reset the state if your inner loop is processing
-    // the samples and the outer loop is handling the channels.
-    // Alternatively, you can process the samples with the channels
-    // interleaved by keeping the same state.
+    
+    //float knobVal = *apvts.getRawParameterValue(KNOB1);
+    //bool  buttonVal = *apvts.getRawParameterValue(BUTTON1) > 0.5f ? true : false;
+    
     for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
-        auto* channelData = buffer.getWritePointer (channel);
+        for (int n = 0; n < buffer.getNumSamples(); ++n){
+            float x = buffer.getWritePointer (channel)[n];
+            
+            smoothedGain[channel] = alpha * smoothedGain[channel] + (1.f-alpha) * gain;
+            
+            float y = x * smoothedGain[channel];
+            
+            buffer.getWritePointer (channel)[n] = y;
+        }
+        
 
         // ..do something to the data...
     }
@@ -195,12 +207,39 @@ void APVTSExampleAudioProcessor::getStateInformation (juce::MemoryBlock& destDat
     // You should use this method to store your parameters in the memory block.
     // You could do that either as raw data, or use the XML or ValueTree classes
     // as intermediaries to make it easy to save and load complex data.
+    
+    auto currentState = apvts.copyState(); // make a duplicate that won't be updated during write to file
+    
+    std::unique_ptr<juce::XmlElement> xml (currentState.createXml());
+    
+    copyXmlToBinary(*xml, destData);
+    
 }
 
 void APVTSExampleAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
+    
+    std::unique_ptr<juce::XmlElement> xml (getXmlFromBinary(data, sizeInBytes));
+    
+    juce::ValueTree newTree = juce::ValueTree::fromXml(*xml);
+    
+    apvts.replaceState(newTree);
+}
+
+
+
+void APVTSExampleAudioProcessor::slider1Changed(float value){
+    
+    // do something with value
+    gain = std::pow(10.f,value/20.f); // linear gain (not smoothed)
+}
+
+void APVTSExampleAudioProcessor::button1Clicked(bool value){
+    
+    // do something with value
+    
 }
 
 //==============================================================================
